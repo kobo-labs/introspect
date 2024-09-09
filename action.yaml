@@ -1,0 +1,48 @@
+---
+name: "Introspect Workflow Run"
+
+inputs:
+  github_token:
+    required: true
+  referenced_workflow:
+    default: ""
+
+outputs:
+  response:
+    description: "JSON with Workflow Run Metadata."
+    value: ${{ steps.introspect.outputs.response }}
+  referenced_workflow_sha:
+    description: "SHA of reusable workflow."
+    value: ${{ steps.referenced_workflows_sha.outputs.sha }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Introspect Workflow Run
+      id: introspect
+      shell: bash
+      run: |
+        owner="${{ github.repository_owner }}"
+        repo="${{ github.event.repository.name }}"
+        response=$(curl -L \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ inputs.github_token }}" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          "https://api.github.com/repos/${owner}/${repo}/actions/runs/${{ github.run_id }}")
+        # Escape the whole JSON response
+        escaped_response=$(echo "${response}" | jq -aRs .)
+        echo "response=${escaped_response}" >> $GITHUB_OUTPUT
+
+    - name: Get Referenced Workflows SHA
+      if: ${{ inputs.referenced_workflow != '' }}
+      id: referenced_workflows_sha
+      shell: bash
+      env:
+        INTROSPECT_RESPONSE: ${{ steps.introspect.outputs.response }}
+      run: |
+        response="$(echo "${INTROSPECT_RESPONSE}" | jq -r .)"
+        sha="$(echo "${response}" | jq -r '[.referenced_workflows[] | select(.path | startswith("${{ inputs.referenced_workflow }}")) | .sha] | first')"
+        if [ -z "${sha}" ]; then
+          echo "::warning::No SHA found for the specified referenced workflow."
+        fi
+        echo "sha=${sha}" >> $GITHUB_OUTPUT
