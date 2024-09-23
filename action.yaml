@@ -18,6 +18,18 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Install dependencies
+      shell: bash
+      run: |
+        deps=(curl jq)
+        for dep in "${deps[@]}"; do
+          if ! command -v "${dep}" &> /dev/null; then
+            echo "Installing ${dep}..."
+            sudo apt-get update
+            sudo apt-get install -y "${dep}"
+          fi
+        done
+
     - name: Introspect Workflow Run
       id: introspect
       shell: bash
