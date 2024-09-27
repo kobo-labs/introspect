@@ -1,0 +1,13 @@
+---
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    permissions: write-all
+    uses: kobo-labs/releaser/.github/workflows/release.yml@v0
+    secrets: inherit

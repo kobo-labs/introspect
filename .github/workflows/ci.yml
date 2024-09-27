@@ -1,0 +1,13 @@
+---
+name: CI
+
+on:
+  pull_request:
+    branches:
+        - main
+
+jobs:
+  check:
+    permissions: write-all
+    uses: kobo-labs/releaser/.github/workflows/check.yml@v0
+    secrets: inherit
