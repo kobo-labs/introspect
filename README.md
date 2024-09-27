@@ -1,25 +1,34 @@
-# introspect
+# `introspect` GitHub Action
 
-This GitHub Action is designed to fetch metadata about a workflow run from the GitHub API and provide it as JSON output. Additionally, it extracts the SHA of a specified reusable workflow, if available.
+The `introspect` action retrieves metadata from a GitHub workflow run and provides it as JSON output. It can also extract the SHA of a specified reusable workflow from the run metadata.
 
-## Features
+## Key Features
 
-- Fetches and outputs detailed metadata of the current workflow run.
-- Extracts the SHA of a specified reusable workflow from the workflow run metadata.
+- **Workflow Metadata:** Fetches detailed information about the current workflow run.
+- **Reusable Workflow SHA:** Extracts the SHA of a referenced reusable workflow.
 
-## Usage
+## How to Use
 
-To use this action in your workflow, add the following step to your GitHub Actions YAML file:
+To add this action to your workflow, include the following steps in your GitHub Actions YAML file:
 
 ```yaml
-- name: Get workflow reference
+- name: Get workflow metadata
   id: introspection
-  uses: clamesc/introspect@<version>
+  uses: kobo-labs/introspect@<version>
   with:
     github_token: ${{ secrets.GITHUB_TOKEN }}
     referenced_workflow: "<owner>/<repo>/.github/workflows/<reusable_workflow>.yml"
 
-- name: Fetch output
+- name: Output reusable workflow SHA
   run: |
-    echo "${{ steps.introspection.outputs.referenced_workflow_sha }}"
+    echo "Referenced Workflow SHA: ${{ steps.introspection.outputs.referenced_workflow_sha }}"
 ```
+
+### Inputs
+
+- **`github_token`** (required): Your GitHub token for authentication.
+- **`referenced_workflow`** (required): The path to the reusable workflow, formatted as `<owner>/<repo>/.github/workflows/<reusable_workflow>.yml`.
+
+### Outputs
+
+- **`referenced_workflow_sha`**: The SHA of the specified reusable workflow.
